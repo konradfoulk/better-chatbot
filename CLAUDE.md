@@ -33,4 +33,3 @@ Tools and technology:
     Claude api to start, will have a model selection feature later
 
 **Logs**
-9-5-26 - getting tools connected, building basic auth app, new users get directed to a login/signup screen can create an account and move on to the homepage and we see the users in the supabase db 
