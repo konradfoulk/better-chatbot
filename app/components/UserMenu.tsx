@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export function UserMenu({ email }: { email: string }) {
     const [open, setOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
     async function handleSignOut() {
@@ -15,8 +16,23 @@ export function UserMenu({ email }: { email: string }) {
         router.refresh();
     }
 
+    useEffect(() => {
+        if (!open) return;
+
+        function handleClickOutside(e: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [open]);
+
     return (
-        <div className="relative border-t p-2">
+        <div ref={menuRef} className="relative border-t p-2">
           {open && (
             <div className="absolute bottom-full left-2 right-2 mb-1 rounded border p-1 shadow">
               <button
