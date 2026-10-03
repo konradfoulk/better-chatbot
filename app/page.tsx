@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Chat } from "@/app/components/Chat";
 
 
 export default async function Home() {
@@ -15,8 +16,9 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-2xl font-semibold">You're in</h1>
-      <p className="text-zinc-600">{data.user.email}</p>
+      {/* <h1 className="text-2xl font-semibold">You're in</h1>
+      <p className="text-zinc-600">{data.user.email}</p> */}
+      <Chat />
     </main>
   );
 }
