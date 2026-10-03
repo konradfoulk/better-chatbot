@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-type Message = {
-    role: "user" | "assistant";
-    content: string;
-}
+import { Message } from "@/lib/types";
 
 export function Chat() {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -19,7 +15,10 @@ export function Chat() {
 
         setInput("");
         setLoading(true);
-        setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
+
+        const newMessages: Message[] = [...messages, { role: "user", content: trimmed }];
+
+        setMessages(newMessages);
 
         try {
             const response = await fetch("/api/chat", {
@@ -27,7 +26,7 @@ export function Chat() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ message: trimmed }),
+                body: JSON.stringify({ messages: newMessages }),
             });
 
             const data = await response.json();
