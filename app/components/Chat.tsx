@@ -49,8 +49,8 @@ export function Chat() {
     }
 
     return (
-        <div className="flex w-full max-w-xl flex-col gap-3">
-          <div className="flex min-h-64 flex-col gap-2 overflow-y-auto rounded border p-3">
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
             {messages.map((message, index) => (
               <p key={index} className={message.role === "user" ? "text-right" : "text-left"}>
                 <span className="text-xs text-zinc-500">{message.role}</span>
@@ -60,7 +60,7 @@ export function Chat() {
             ))}
           </div>
       
-          <form onSubmit={handleSend} className="flex gap-2">
+          <form onSubmit={handleSend} className="border-t p-3 flex gap-2">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
