@@ -15,12 +15,34 @@ export async function POST(request: Request) {
             parts: [{ text: message.content }],
         }));
         
-        const response = await ai.models.generateContent({
+        const stream = await ai.models.generateContentStream({
             model: "gemini-3.8-flash",
             contents,
         });
 
-        return NextResponse.json({ reply: response.text ?? ""});
+        const encoder = new TextEncoder();
+        const readable = new ReadableStream({
+            async start(controller) {
+                try {
+                    for await (const chunk of stream) {
+                        const text = chunk.text;
+                        if (text) {
+                            controller.enqueue(encoder.encode(text));
+                        }
+                    }
+                    controller.close();
+                } catch (error) {
+                    controller.error(error);
+                }
+            },
+        });
+        
+        return new Response(readable, {
+            headers: {
+                "Content-Type": "text/plain; charset=utf-8",
+                "Cache-Control": "no-cache",
+            },
+        });
     } catch (error) {
         console.error(error);
         return NextResponse.json(

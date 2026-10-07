@@ -29,9 +29,8 @@ export function Chat() {
                 body: JSON.stringify({ messages: newMessages }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
+                const data = await response.json();
                 setMessages((prev) => [
                     ...prev,
                     { role: "assistant", content: data.error ?? "Something went wrong" },
@@ -39,10 +38,26 @@ export function Chat() {
                 return;
             }
 
-            setMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: data.reply },
-            ]);
+            // Empty assistant bubble to fill as chunks arrive
+            setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+            
+            const reader = response.body!.getReader();
+            const decoder = new TextDecoder();
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const text = decoder.decode(value, { stream: true });
+                setMessages((prev) => {
+                    const updated = [...prev];
+                    const last = updated[updated.length - 1];
+                    updated[updated.length - 1] = {
+                      ...last,
+                      content: last.content + text,
+                };
+                return updated;
+              });
+            }
         } finally {
             setLoading(false);
         }
@@ -50,32 +65,32 @@ export function Chat() {
 
     return (
         <div className="flex h-full min-h-0 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto p-4">
-            {messages.map((message, index) => (
-              <p key={index} className={message.role === "user" ? "text-right" : "text-left"}>
-                <span className="text-xs text-zinc-500">{message.role}</span>
-                <br />
-                {message.content}
-              </p>
-            ))}
-          </div>
-      
-          <form onSubmit={handleSend} className="border-t p-3 flex gap-2">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={loading}
-              className="flex-1 rounded border px-3 py-2"
-              placeholder="Say something..."
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded bg-black px-3 py-2 text-white disabled:opacity-50"
-            >
-              {loading ? "..." : "Send"}
-            </button>
-          </form>
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                {messages.map((message, index) => (
+                <p key={index} className={message.role === "user" ? "text-right" : "text-left"}>
+                    <span className="text-xs text-zinc-500">{message.role}</span>
+                    <br />
+                    {message.content}
+                </p>
+                ))}
+            </div>
+        
+            <form onSubmit={handleSend} className="border-t p-3 flex gap-2">
+                <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={loading}
+                className="flex-1 rounded border px-3 py-2"
+                placeholder="Say something..."
+                />
+                <button
+                type="submit"
+                disabled={loading}
+                className="rounded bg-black px-3 py-2 text-white disabled:opacity-50"
+                >
+                {loading ? "..." : "Send"}
+                </button>
+            </form>
         </div>
     );
 }
